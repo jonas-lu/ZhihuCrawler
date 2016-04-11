@@ -1,4 +1,4 @@
-class AccountManager():
+class AccountManager:
 
     @classmethod
     def get_account(cls):

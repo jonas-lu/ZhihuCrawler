@@ -2,6 +2,7 @@ from pyquery import PyQuery as pq
 from account_manager import AccountManager
 import utils
 
+
 class SessionFactory(object):
     account = None
 
@@ -10,16 +11,10 @@ class SessionFactory(object):
         cls.account = account
 
     @classmethod
-    def get_xsrf(cls, html):
-        d = pq(html)
-        xsrf = d("input[name=_xsrf]")
-        return xsrf.attr("value")
-
-    @classmethod
     def login_zhihu(cls):
         session = utils.get_session()
 
-        _xsrf = cls.get_xsrf(utils.download_page("http://www.zhihu.com"))
+        _xsrf = utils.get_xsrf(utils.download_page("http://www.zhihu.com"))
         data = {
             '_xsrf': _xsrf,
             'email': cls.account['username'],
