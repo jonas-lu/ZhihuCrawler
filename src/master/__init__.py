@@ -27,7 +27,7 @@ def start(seed):
         if item['type'] == 'message':
             message = item['data']
             update = json.loads(message.decode('utf-8'))
-            logger.warning('New message from %s, id: %s, status: %s', update['hostname'], update['id'], update['status'])
+            logger.warning('New message from %s, status: %s', update['id'], update['status'])
             ah.remove(update['account']['username'])
 
             status[update['id']] = update

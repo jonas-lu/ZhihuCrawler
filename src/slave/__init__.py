@@ -7,28 +7,30 @@ from exception import *
 from utils.session_helper import SessionHelper
 import socket
 from manager import Account
-import uuid
 
+status = {}
 logger = logging.getLogger(__name__)
+finished = {
+    'user': 0,
+    'followings': 0
+}
 
 
-def start():
+def start(instance_id):
     global task
+    global status
     task = ''
+
+    logger.warning('Instance id: %s', instance_id)
 
     hostname = socket.gethostname()
     ip = socket.gethostbyname(hostname)
     start_time = int(time.time())
-    instance_id = uuid.uuid1().hex
 
     session = SessionHelper()
 
-    finished = {
-        'user': 0,
-        'followings': 0
-    }
     status = {
-        'id': instance_id,
+        'id': hostname + '-' + str(instance_id),
         'hostname': hostname,
         'ip': ip,
         'finished': finished,
@@ -39,6 +41,7 @@ def start():
         'start_time': start_time,
         'update_time': int(time.time())
     }
+
     rh.publish_status(status)
 
     while True:
@@ -117,9 +120,25 @@ def start():
 
 
 def terminate():
+    logger.error('Terminate gracefully...')
+
+    acct = Account.get_using()
+    rh.push_acct(acct)
+    logger.error('return account %s', acct['username'])
+
     if task:
         rh.lpush_task_user(task)
-        logger.error('Terminate gracefully, push back task %s, quit', task)
-        exit()
-    else:
-        logger.error('Terminate gracefully, quit')
+        logger.error('return task %s', task)
+
+    status.update({
+        'finished': finished,
+        'task': task,
+        'status': 'exit',
+        'message': 'Exit gracefully',
+        'account': acct,
+        'update_time': int(time.time())
+    })
+    rh.publish_status(status)
+
+    logger.error('Exit')
+    exit()

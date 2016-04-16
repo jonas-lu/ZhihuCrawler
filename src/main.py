@@ -28,7 +28,8 @@ if mode:
     if mode == "master":
         master.start('jonas-lu')
     else:
-        slave.start()
+        instance_id = sys.argv[2] if len(sys.argv) >= 3 else 0
+        slave.start(instance_id)
 else:
     print('Invalid arguments')
     exit()

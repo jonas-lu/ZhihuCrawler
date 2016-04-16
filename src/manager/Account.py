@@ -39,6 +39,8 @@ acct_file = config('root') + 'cache/account.txt'
 #     using = new_acct
 #     return new_acct
 
+using = {}
+
 
 def get(*old):
     global using
