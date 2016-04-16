@@ -1,15 +1,11 @@
 from pyquery import PyQuery as pq
-import json
 from utils import PageHelper
 from manager import Session
 import logging
-import time
-import random
-
-FOLLOWEES_JSON_URL = 'https://www.zhihu.com/node/ProfileFolloweesListV2'
+import config
 
 
-class FollowingsCrawler:
+class ProfileCrawler:
 
     def __init__(self, session, user_domain):
         self.session = session
@@ -27,32 +23,6 @@ class FollowingsCrawler:
         response = self.session.get(self.url)
         self.page = response.content
         self.user['hashid'] = PageHelper.get_user_hash(self.page)
-        self.xsrf = PageHelper.get_xsrf(self.page)
-
-    def get_followings_json(self, offset):
-        form = {
-            'method': 'next',
-            'params': json.dumps({'offset': offset, 'order_by': 'created', 'hash_id': self.user['hashid']}),
-            '_xsrf': self.xsrf
-        }
-
-        response = self.session.post('https://www.zhihu.com/node/ProfileFolloweesListV2', form)
-        html = response.json()['msg']
-        return html if len(html) else None
-
-    def get_followings_from_html(self, htmls):
-        d = pq(''.join(htmls))
-        people = d('.zm-profile-card')
-
-        for person in people.items():
-            hashid = person.find('button').attr('data-id')
-            s_person_link = person.find('.zm-list-content-title a')
-            profile = {
-                'hashid': hashid,
-                'domain': s_person_link.attr('href')[29:],
-                'name': s_person_link.text()
-            }
-            self.user['followings'].append(profile)
 
     def get_profile(self):
         d = pq(self.page)
@@ -86,19 +56,16 @@ class FollowingsCrawler:
         self.logger.warning('Start crawling %s', self.user_domain)
         self.get_followings_page()
         self.get_profile()
-        while True:
-            html = self.get_followings_json(len(self.user['followings']))
-            if html:
-                self.get_followings_from_html(html)
-            else:
-                break
-            time.sleep(random.uniform(0.5, 2))
-        self.logger.warning('Finish crawling %s, %s followings', self.user_domain, len(self.user['followings']))
+
+        self.logger.warning('Finish crawling profile for %s,', self.user_domain)
         return self.user
 
 
 if __name__ == '__main__':
+    config.set_config('env', 'dev')
     logging.basicConfig(level=logging.INFO)
     s = Session.get()
-    fc = FollowingsCrawler(s, 'zhang-wen-wen-17')
-    print(fc.get())
+    pc = ProfileCrawler(s, 'jonas-lu')
+    user = pc.get()
+    for p in user:
+        print(p, user[p])
