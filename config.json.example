@@ -14,18 +14,18 @@
         "system_info": "zh-sys-info"
     },
     "redis": {
-        "server": "10.116.28.178",
+        "server": "",
         "port": 6379,
         "db": 0
     },
     "neo4j": {
-        "server": "localhost:7474",
-        "username": "neo4j",
-        "password": "xdlab210@neo4j"
+        "server": "",
+        "username": "",
+        "password": ""
     },
     "dmt": {
-        "username": "wonderror",
-        "password": "7474974"
+        "username": "",
+        "password": ""
     },
     "env": "run"
 }
