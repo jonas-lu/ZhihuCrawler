@@ -1,11 +1,9 @@
 import threading
-from config import get as config
 import logging
-import redis
 import json
 import time
 from model.user import User
-from exception import RedisException
+from utils import redis_helper as rh
 
 
 class Storing(threading.Thread):
@@ -14,11 +12,6 @@ class Storing(threading.Thread):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger(__name__)
         self._terminated = False
-        try:
-            self.r = redis.StrictRedis(host=config('redis.server'), port=config('redis.port'), db=config('redis.db'))
-        except ConnectionError:
-            self.logger.error('failed to connect to redis')
-            raise RedisException
 
     def run(self):
         self.logger.warning('start fetch result')
@@ -26,18 +19,17 @@ class Storing(threading.Thread):
             if self._terminated:
                 self.logger.warning('Terminate storage thread gracefully')
                 break
-            user = self.r.blpop(config('queue.result_user'), 10)
+            user = rh.bpop_result_user(10)
             if user:
                 user_json = user[1].decode('utf-8')
                 user_dict = json.loads(user_json)
 
                 if user_dict:
                     user = User(user_dict)
-                    new_task = 0
-                    for task in user.get_tasks():
-                        self.r.rpush(config('queue.task_user'), task['domain'].encode('utf-8'))
-                        new_task += 1
-                    self.logger.warning("Push %s tasks", new_task)
+                    tasks = user.get_tasks()
+                    if len(tasks) > 0:
+                        rh.rpush_task_user(tasks)
+                    self.logger.warning("Push %s tasks", len(tasks))
             else:
                 time.sleep(2)
 

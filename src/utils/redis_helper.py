@@ -28,6 +28,22 @@ def push_result_user(user):
         raise RedisException
 
 
+def bpop_result_user(timeout):
+    try:
+        return r.blpop(config('queue.result_user'), timeout)
+    except ConnectionError as e:
+        logger.error(e)
+        raise RedisException
+
+
+def rpush_task_user(user_domain_list):
+    try:
+        r.rpush(config('queue.task_user'), *user_domain_list)
+    except ConnectionError as e:
+        logger.error(e)
+        raise RedisException
+
+
 def lpush_task_user(user_domain):
     try:
         r.lpush(config('queue.task_user'), user_domain.encode('utf-8'))
