@@ -73,58 +73,41 @@ def start(instance_id):
 
             time.sleep(random.uniform(1, 5))
         except ResponseException:
-            if task:
-                rh.lpush_task_user(task)
             message = 'Crawling response error, push back task, quit'
-            logger.error(message)
-            status.update({
-                'finished': finished,
-                'task': task,
-                'status': 'error',
-                'message': message,
-                'account': Account.get_using(),
-                'update_time': int(time.time())
-            })
-            rh.publish_status(status)
-            exit()
+            terminate(message)
         except RedisException:
             logger.error('Redis connection error, quit')
             exit()
         except NetworkException:
             message = 'Network connection error, quit'
-            logger.error(message)
-            status.update({
-                'finished': finished,
-                'task': task,
-                'status': 'error',
-                'message': message,
-                'account': Account.get_using(),
-                'update_time': int(time.time())
-            })
-            rh.publish_status(status)
-            logger.error(message)
-            exit()
+            terminate(message)
         except NotFoundException:
             message = "User %s not found, continue" % task
             logger.error(message)
-            status.update({
-                'finished': finished,
-                'task': task,
-                'status': 'warning',
-                'message': message,
-                'account': Account.get_using(),
-                'update_time': int(time.time())
-            })
-            rh.publish_status(status)
             continue
+        except Exception as e:
+            terminate(e)
 
 
-def terminate():
+def terminate(*msg):
+    if msg:
+        logger.error(msg[0])
+        status.update({
+            'status': 'error',
+            'message': msg[0]
+        })
+    else:
+        status.update({
+            'status': 'exit',
+            'message': 'Exit gracefully',
+        })
+
     logger.error('Terminate gracefully...')
 
     acct = Account.get_using()
-    rh.push_acct(acct)
-    logger.error('return account %s', acct['username'])
+    if 'username' in acct:
+        rh.push_acct(acct)
+        logger.error('return account %s', acct['username'])
 
     if task:
         rh.lpush_task_user(task)
@@ -133,8 +116,6 @@ def terminate():
     status.update({
         'finished': finished,
         'task': task,
-        'status': 'exit',
-        'message': 'Exit gracefully',
         'account': acct,
         'update_time': int(time.time())
     })

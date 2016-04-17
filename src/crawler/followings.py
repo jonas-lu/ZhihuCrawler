@@ -45,14 +45,17 @@ class FollowingsCrawler:
         people = d('.zm-profile-card')
 
         for person in people.items():
-            hashid = person.find('button').attr('data-id')
-            s_person_link = person.find('.zm-list-content-title a')
-            profile = {
-                'hashid': hashid,
-                'domain': s_person_link.attr('href')[29:],
-                'name': s_person_link.text()
-            }
-            self.user['followings'].append(profile)
+            try:
+                hashid = person.find('button').attr('data-id')
+                s_person_link = person.find('.zm-list-content-title a')
+                profile = {
+                    'hashid': hashid,
+                    'domain': s_person_link.attr('href')[29:],
+                    'name': s_person_link.text()
+                }
+                self.user['followings'].append(profile)
+            except TypeError:
+                continue
 
     def get_profile(self):
         d = pq(self.page)
