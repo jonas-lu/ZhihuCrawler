@@ -42,18 +42,19 @@ class User:
 
     def get_tasks(self):
         tasks = []
-        relationships = []
+        # relationships = []
         for f in self.followings:
             if f['hashid']:
                 dst_node = self.merge_node(f)
                 follows = py2neo.Relationship(self.src_node, 'FOLLOWS', dst_node)
-                relationships.append(follows)
+                # relationships.append(follows)
+                self.g.create_unique(follows)
 
                 if not rh.is_user_crawled(f['domain']):
                     tasks.append(f['domain'].encode('utf-8'))
 
-        if len(relationships) > 0:
-            self.g.create_unique(*relationships)
+        # if len(relationships) > 0:
+        #     self.g.create_unique(*relationships)
 
         return tasks
 

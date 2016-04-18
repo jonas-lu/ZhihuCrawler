@@ -5,6 +5,7 @@ from manager import Session
 import logging
 import time
 import random
+from config import get as config
 
 FOLLOWEES_JSON_URL = 'https://www.zhihu.com/node/ProfileFolloweesListV2'
 
@@ -37,7 +38,14 @@ class FollowingsCrawler:
         }
 
         response = self.session.post('https://www.zhihu.com/node/ProfileFolloweesListV2', form)
+
         html = response.json()['msg']
+
+        if len(html) == 1:
+            d = pq(html[0])
+            if not d('button'):
+                return None
+
         return html if len(html) else None
 
     def get_followings_from_html(self, htmls):

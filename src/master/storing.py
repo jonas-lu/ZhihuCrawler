@@ -25,11 +25,12 @@ class Storing(threading.Thread):
                 user_dict = json.loads(user_json)
 
                 if user_dict:
+                    start_time  = time.time()
                     user = User(user_dict)
                     tasks = user.get_tasks()
                     if len(tasks) > 0:
                         rh.rpush_task_user(tasks)
-                    self.logger.warning("Push %s tasks", len(tasks))
+                    self.logger.warning("Push %s tasks in %s secs", len(tasks), round(time.time() - start_time, 2))
             else:
                 time.sleep(2)
 

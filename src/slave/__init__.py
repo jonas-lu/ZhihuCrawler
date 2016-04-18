@@ -94,7 +94,7 @@ def terminate(*msg):
         logger.error(msg[0])
         status.update({
             'status': 'error',
-            'message': msg[0]
+            'message': str(msg[0])
         })
     else:
         status.update({
