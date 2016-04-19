@@ -31,7 +31,7 @@ def start(seed):
             ah.remove(update['account']['username'])
 
             status[update['id']] = update
-            r.set(config('keys.system_info'), status)
+            r.set(config('keys.system_info'), json.dumps(status))
 
     storage.join()
 

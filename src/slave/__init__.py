@@ -21,32 +21,32 @@ def start(instance_id):
     global status
     task = ''
 
-    logger.warning('Instance id: %s', instance_id)
+    try:
+        logger.warning('Instance id: %s', instance_id)
 
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
-    start_time = int(time.time())
+        hostname = socket.gethostname()
+        ip = socket.gethostbyname(hostname)
+        start_time = int(time.time())
 
-    session = SessionHelper()
+        session = SessionHelper()
 
-    status = {
-        'id': hostname + '-' + str(instance_id),
-        'hostname': hostname,
-        'ip': ip,
-        'finished': finished,
-        'task': '',
-        'status': 'init',
-        'message': '',
-        'account': Account.get_using(),
-        'start_time': start_time,
-        'update_time': int(time.time())
-    }
+        status = {
+            'id': hostname + '-' + str(instance_id),
+            'hostname': hostname,
+            'ip': ip,
+            'finished': finished,
+            'task': '',
+            'status': 'init',
+            'message': '',
+            'account': Account.get_using(),
+            'start_time': start_time,
+            'update_time': int(time.time())
+        }
 
-    rh.publish_status(status)
+        rh.publish_status(status)
 
-    while True:
-        task = ''
-        try:
+        while True:
+            task = ''
             task = rh.get_task_user()
             logger.warning('Get task: ' + task)
 
@@ -63,30 +63,32 @@ def start(instance_id):
             })
             rh.publish_status(status)
 
-            fc = FollowingsCrawler(session, task)
-            user = fc.get()
-            logger.warning('Push result: ' + task)
-            rh.push_result_user(user)
+            try:
+                fc = FollowingsCrawler(session, task)
+                user = fc.get()
+                logger.warning('Push result: ' + task)
+                rh.push_result_user(user)
 
-            finished['user'] += 1
-            finished['followings'] += len(user['followings'])
+                finished['user'] += 1
+                finished['followings'] += len(user['followings'])
 
-            time.sleep(random.uniform(1, 5))
-        except ResponseException:
-            message = 'Crawling response error, push back task, quit'
-            terminate(message)
-        except RedisException:
-            logger.error('Redis connection error, quit')
-            exit()
-        except NetworkException:
-            message = 'Network connection error, quit'
-            terminate(message)
-        except NotFoundException:
-            message = "User %s not found, continue" % task
-            logger.error(message)
-            continue
-        except Exception as e:
-            terminate(e)
+                time.sleep(random.uniform(1, 5))
+            except NotFoundException:
+                message = "User %s not found, continue" % task
+                logger.error(message)
+                continue
+    except ResponseException:
+        message = 'Crawling response error, push back task, quit'
+        terminate(message)
+    except RedisException:
+        logger.error('Redis connection error, quit')
+        exit()
+    except NetworkException:
+        message = 'Network connection error, quit'
+        terminate(message)
+
+    except Exception as e:
+        terminate(e)
 
 
 def terminate(*msg):
