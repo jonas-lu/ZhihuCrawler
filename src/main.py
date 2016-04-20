@@ -10,7 +10,7 @@ mode = sys.argv[1]
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(CURRENT_DIR))
 
-fmt = "%(asctime)s %(message)s"
+fmt = "%(asctime)s %(name)s %(message)s"
 logging.basicConfig(level=logging.WARNING, format=fmt)
 
 
@@ -31,7 +31,4 @@ if mode:
         instance_id = sys.argv[2] if len(sys.argv) >= 3 else 0
         slave.start(instance_id)
 else:
-    print('Invalid arguments')
-    exit()
-
-
+    sys.exit('Invalid arguments')

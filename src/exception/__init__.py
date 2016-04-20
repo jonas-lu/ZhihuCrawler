@@ -16,3 +16,7 @@ class RedisException(Exception):
 
 class NotFoundException(Exception):
     pass
+
+
+class NoTaskException(Exception):
+    pass

@@ -7,6 +7,8 @@ from exception import *
 from utils.session_helper import SessionHelper
 import socket
 from manager import Account
+import traceback
+import sys
 
 status = {}
 logger = logging.getLogger(__name__)
@@ -82,12 +84,12 @@ def start(instance_id):
         terminate(message)
     except RedisException:
         logger.error('Redis connection error, quit')
-        exit()
+        sys.exit('Redis Error!')
     except NetworkException:
         message = 'Network connection error, quit'
         terminate(message)
-
     except Exception as e:
+        print(traceback.format_exc())
         terminate(e)
 
 
@@ -124,4 +126,7 @@ def terminate(*msg):
     rh.publish_status(status)
 
     logger.error('Exit')
-    exit()
+    if msg:
+        sys.exit(msg[0])
+    else:
+        sys.exit(0)

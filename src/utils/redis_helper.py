@@ -2,7 +2,7 @@ from config import get as config
 import redis
 import logging
 import json
-from exception import RedisException
+from exception import RedisException, AccountException, NoTaskException
 
 r = redis.StrictRedis(host=config('redis.server'), port=config('redis.port'), db=config('redis.db'))
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ def get_task_user():
         task_str = r.blpop(config('queue.task_user'), 120)
         if not task_str:
             logger.error('No task, quit')
-            exit()
+            raise NoTaskException
         return task_str[1].decode('utf-8')
     except ConnectionError as e:
         logger.error(e)
@@ -65,7 +65,7 @@ def get_acct():
         acct = r.blpop(config('queue.admin_acct'), 120)
         if not acct:
             logger.error('No account, quit')
-            exit()
+            raise AccountException
         return json.loads(acct[1].decode('utf-8'))
     except ConnectionError as e:
         logger.error(e)

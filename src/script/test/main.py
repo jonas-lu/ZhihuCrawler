@@ -21,4 +21,12 @@ import sys
 # sub.start()
 # sub.join()
 
-print(sys.argv[1], sys.argv[2])
+
+class MyException(Exception):
+    pass
+
+
+try:
+    raise MyException('my ex')
+except Exception as e:
+    print(e)
