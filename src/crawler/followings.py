@@ -74,9 +74,8 @@ class FollowingsCrawler:
         self.user['business'] = d_info.find('span.business').attr('title') or ''
         self.user['employment'] = d_info.find('span.employment').attr('title') or ''
         self.user['position'] = d_info.find('span.position').attr('title') or ''
-        edu = d_info.find('span.education').attr('title') or ''
-        edu_ex = d_info.find('span.education-extra').attr('title') or ''
-        self.user['education'] = ' ' if edu else '' + edu_ex
+        self.user['education'] = d_info.find('span.education').attr('title') or ''
+        self.user['education-extra'] = d_info.find('span.education-extra').attr('title') or ''
         d_gender = d_info.find('span.gender i')
         self.user['gender'] = 'female' if d_gender.hasClass('icon-profile-female') else 'male'
 
